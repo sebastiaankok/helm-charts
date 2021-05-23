@@ -15,7 +15,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/nginx-vhost.yaml") . | sha256sum }}
+        checksum/nginx-config: {{ include (print $.Template.BasePath "/nginx-config.yaml") . | sha256sum }}
       {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
