@@ -1,0 +1,226 @@
+{{- $fullName := include "bedrock-k8s.fullname" . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "bedrock-k8s.fullname" . }}
+  labels:
+    {{- include "bedrock-k8s.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "bedrock-k8s.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "bedrock-k8s.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "bedrock-k8s.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: copy-source
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}" 
+          command:
+            - "/bin/sh"
+            - "-c"
+            - "cp -a /code/web /var/www/web && cp -a /code/vendor /var/www/vendor && cp -a /code/config /var/www/config"
+          volumeMounts:
+          - mountPath: /var/www
+            name: bedrock-code
+      containers:
+        ## Nginx frontend container 
+        - name: "{{ .Chart.Name }}-nginx"
+          image: "{{ .Values.image.nginx }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+          - containerPort: 8081
+            name: bedrock-nginx
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 8081
+            timeoutSeconds: 1
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            successThreshold: 1
+            tcpSocket:
+              port: 8081
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: "1"
+            requests:
+              cpu: 75m
+              memory: 50Mi
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          volumeMounts:
+          - mountPath: /etc/nginx/conf.d
+            name: proxy-vhost
+          - mountPath: /var/run/cache
+            name: nginx-cache
+          - mountPath: /var/run/sockets
+            name: sockets
+          - mountPath: /var/www
+            name: bedrock-code
+          - mountPath: /var/www/web/app/uploads
+            name: uploads
+
+        ## Application container
+        - name: "{{ .Chart.Name }}-app"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: DB_HOST
+            value: "{{ .Release.Name }}-mariadb"
+          - name: DB_NAME
+            value: "{{ .Values.mariadb.auth.database }}"
+          - name: DB_USER
+            value: "{{ .Values.mariadb.auth.username }}"
+          ## Environment variables
+          {{- range $k,$v :=.Values.env }}
+          - name: {{ $k }}
+            value: {{ $v | quote }} 
+          {{- end }}
+          {{- if .Values.saltSecrets }}
+          - name: AUTH_KEY
+            valueFrom:
+              secretKeyRef:
+                key: AUTH_KEY
+                name: "{{ .Values.saltSecrets }}"
+          - name: SECURE_AUTH_KEY
+            valueFrom:
+              secretKeyRef:
+                key: SECURE_AUTH_KEY
+                name: "{{ .Values.saltSecrets }}"
+          - name: LOGGED_IN_KEY
+            valueFrom:
+              secretKeyRef:
+                key: LOGGED_IN_KEY
+                name: "{{ .Values.saltSecrets }}"
+          - name: NONCE_KEY
+            valueFrom:
+              secretKeyRef:
+                key: NONCE_KEY
+                name: "{{ .Values.saltSecrets }}"
+          - name: AUTH_SALT
+            valueFrom:
+              secretKeyRef:
+                key: AUTH_SALT
+                name: "{{ .Values.saltSecrets }}"
+          - name: SECURE_AUTH_SALT
+            valueFrom:
+              secretKeyRef:
+                key: SECURE_AUTH_SALT
+                name: "{{ .Values.saltSecrets }}"
+          - name: LOGGED_IN_SALT
+            valueFrom:
+              secretKeyRef:
+                key: LOGGED_IN_SALT
+                name: "{{ .Values.saltSecrets }}"
+          - name: NONCE_SALT
+            valueFrom:
+              secretKeyRef:
+                key: NONCE_SALT
+                name: "{{ .Values.saltSecrets }}"
+          {{- end }}
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: mariadb-password
+                {{- if .Values.mariadb.auth.existingSecret }}
+                name: {{ .Values.mariadb.auth.existingSecret }}
+                {{- else }}
+                name: "{{ .Release.Name }}-mariadb"
+                {{- end }}
+                optional: false
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          lifecycle:
+            preStop:
+              httpGet:
+                path: /
+                port: 8081
+                scheme: HTTP
+          livenessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - '[ -S /var/run/sockets/php-fpm.sock ]'
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 2
+            successThreshold: 1
+            timeoutSeconds: 1
+          readinessProbe:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - '[ -S /var/run/sockets/php-fpm.sock ]'
+            failureThreshold: 3
+            initialDelaySeconds: 2
+            periodSeconds: 2
+            successThreshold: 1
+            timeoutSeconds: 1
+          volumeMounts:
+          - mountPath: /var/www
+            name: bedrock-code
+          - mountPath: /var/run/cache
+            name: nginx-cache
+          - mountPath: /var/run/sockets
+            name: sockets
+          - mountPath: /var/www/web/app/uploads
+            name: uploads
+      volumes:
+      - emptyDir: {}
+        name: bedrock-code
+      - emptyDir:
+          medium: Memory
+        name: nginx-cache
+      - emptyDir:
+          medium: Memory
+        name: sockets
+      - name: uploads
+      {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: "{{ $fullName }}-pvc"
+      {{- else }}
+        emptyDir: {}
+      {{- end }}
+      - configMap:
+          defaultMode: 420
+          name: nginx-vhost
+        name: proxy-vhost
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

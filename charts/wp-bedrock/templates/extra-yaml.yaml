@@ -1,0 +1,4 @@
+{{- if .Values.extraYaml }}
+{{ .Values.extraYaml }}
+---
+{{- end }}

@@ -1,0 +1,31 @@
+{{ template "chart.header" . }}
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.homepageLine" . }}
+
+## Installation
+
+### Add Helm repository
+
+```shell
+helm repo add sebastiaankok https://sebastiaankok.github.io/helm-charts
+helm repo update
+```
+
+## Install wp-bedrock chart
+
+Using config from a file:
+
+```bash
+helm install --generate-name sebastiaankok/wp-bedrock -f values.yaml
+```
+
+## Configuration
+
+The following table lists the configurable parameters of the chart and the default values.
+
+{{ template "chart.valuesSection" . }}
