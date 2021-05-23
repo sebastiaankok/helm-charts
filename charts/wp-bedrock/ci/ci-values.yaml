@@ -1,0 +1,13 @@
+image:
+  repository: registry.gitlab.com/sebastiaankok/wp-bedrock-example
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+persistence:
+  enabled: false
+
+mariadb:
+  enabled: true
+  auth:
+    password: "349jkr0e9agj09gjaorigj"
+    rootPassword: "oigjkaeorigjaoeirjg"
