@@ -9,7 +9,7 @@ sources:
   - https://gitlab.com/sebastiaankok/wp-bedrock-example
   - https://roots.io/bedrock/
 maintainers:
-- name: Sebastiaan Kok
+- name: sebastiaankok
   email: helm@sebastiaankok.nl
 dependencies:
 - name: mariadb
