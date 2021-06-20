@@ -37,7 +37,7 @@ spec:
           command:
             - "/bin/sh"
             - "-c"
-            - "cp -a /code/web /var/www/web && cp -a /code/vendor /var/www/vendor && cp -a /code/config /var/www/config"
+            - "cp -a /code/web /var/www/web && cp -a /code/vendor /var/www/vendor && cp -a /code/config /var/www/config && ln -s /var/run/wordpress-cache /var/www/web/app/cache"
           volumeMounts:
           - mountPath: /var/www
             name: bedrock-code
@@ -79,12 +79,17 @@ spec:
             name: proxy-vhost
           - mountPath: /var/run/cache
             name: nginx-cache
+          - mountPath: /var/run/wordpress-cache
+            name: wordpress-cache
+            readOnly: true
           - mountPath: /var/run/sockets
             name: sockets
           - mountPath: /var/www
             name: bedrock-code
+            readOnly: true
           - mountPath: /var/www/web/app/uploads
             name: uploads
+            readOnly: true
 
         ## Application container
         - name: "{{ .Chart.Name }}-app"
@@ -187,8 +192,11 @@ spec:
           volumeMounts:
           - mountPath: /var/www
             name: bedrock-code
+            readOnly: true
           - mountPath: /var/run/cache
             name: nginx-cache
+          - mountPath: /var/run/wordpress-cache
+            name: wordpress-cache
           - mountPath: /var/run/sockets
             name: sockets
           - mountPath: /var/www/web/app/uploads
@@ -199,6 +207,9 @@ spec:
       - emptyDir:
           medium: Memory
         name: nginx-cache
+      - emptyDir:
+          medium: Memory
+        name: wordpress-cache
       - emptyDir:
           medium: Memory
         name: sockets
