@@ -128,13 +128,16 @@ data:
         try_files $uri $uri/ /index.php?$query_string;
       }
     
-      location ~* \.(js|css|png|jpg|jpeg|gif|svg|ico)$ {
+      location ~* \.(js|css|png|jpg|jpeg|gif|svg|ico|pdf|html|swf)$ {
        expires 30d;
        add_header Cache-Control "public, no-transform";
       }
-    
-      location ~*  \.(pdf|css|html|js|swf)$ {
-          expires 2d;
+
+      # Prevent direct execution of php scripts in app directory
+      location /app/ {
+        location ~ \.php$ {
+          deny all;
+        }
       }
     
       location ~ \.php$ {
