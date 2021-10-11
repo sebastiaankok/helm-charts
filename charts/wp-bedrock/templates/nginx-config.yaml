@@ -118,8 +118,8 @@ data:
       set $skip_reason "Woocommerce add-to-cart"; 
       }
     
-      # Don't cache when items in cart
-      if ( $cookie_woocommerce_items_in_cart != "0" ) { 
+      # Don't cache when woocommerce_items_in_cart cookie is set
+      if ( $cookie_woocommerce_items_in_cart ) { 
         set $do_not_cache 1;
         set $skip_reason Woocommerce-cart-items; 
       }
