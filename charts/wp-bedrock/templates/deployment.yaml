@@ -90,6 +90,9 @@ spec:
           - mountPath: /var/www/web/app/uploads
             name: uploads
             readOnly: true
+          - mountPath: /tmp
+            name: tmp
+            readOnly: false
 
         ## Application container
         - name: "{{ .Chart.Name }}-app"
@@ -201,7 +204,19 @@ spec:
             name: sockets
           - mountPath: /var/www/web/app/uploads
             name: uploads
+          - mountPath: /opt/bitnami/php/logs/
+            name: php-logs
+            readOnly: false
+          - mountPath: /opt/bitnami/php/tmp/
+            name: php-pid
+            readOnly: false
       volumes:
+      - emptyDir: {}
+        name: tmp
+      - emptyDir: {}
+        name: php-pid
+      - emptyDir: {}
+        name: php-logs
       - emptyDir: {}
         name: bedrock-code
       - emptyDir:
