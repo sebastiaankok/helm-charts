@@ -1,6 +1,6 @@
 # wp-bedrock
 
-![Version: 0.1.4](https://img.shields.io/badge/Version-0.1.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.0](https://img.shields.io/badge/AppVersion-0.1.0-informational?style=flat-square)
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.0](https://img.shields.io/badge/AppVersion-0.1.0-informational?style=flat-square)
 
 A Helm chart for Bedrock, a Wordpress boilerplate
 
@@ -25,7 +25,7 @@ helm install --generate-name sebastiaankok/wp-bedrock -f values.yaml
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://charts.bitnami.com/bitnami | mariadb | ~9.3.11 |
+| https://charts.bitnami.com/bitnami | mariadb | ~11.1.0 |
 
 ## Configuration
 

@@ -2,7 +2,7 @@ apiVersion: v2
 name: wp-bedrock
 description: A Helm chart for Bedrock, a Wordpress boilerplate
 type: application
-version: 0.1.4
+version: 0.2.0
 appVersion: "0.1.0"
 sources:
   - https://github.com/sebastiaankok/helm-charts
@@ -13,6 +13,6 @@ maintainers:
   email: sebastiaan@linux.com
 dependencies:
 - name: mariadb
-  version: "~9.3.11"
+  version: "~11.1.0"
   repository: https://charts.bitnami.com/bitnami
   condition: mariadb.enabled
