@@ -3,6 +3,28 @@ entries:
   wp-bedrock:
   - apiVersion: v2
     appVersion: 0.1.0
+    created: "2022-07-15T15:54:17.824390317Z"
+    dependencies:
+    - condition: mariadb.enabled
+      name: mariadb
+      repository: https://charts.bitnami.com/bitnami
+      version: ~11.1.0
+    description: A Helm chart for Bedrock, a Wordpress boilerplate
+    digest: ec943faf3d4c485a539e71962779a1a3713b0b5a020f257d66ca43a694a81347
+    maintainers:
+    - email: sebastiaan@linux.com
+      name: sebastiaankok
+    name: wp-bedrock
+    sources:
+    - https://github.com/sebastiaankok/helm-charts
+    - https://gitlab.com/sebastiaankok/wp-bedrock-example
+    - https://roots.io/bedrock/
+    type: application
+    urls:
+    - https://github.com/sebastiaankok/helm-charts/releases/download/wp-bedrock-0.2.1/wp-bedrock-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: 0.1.0
     created: "2022-07-15T15:39:03.676700983Z"
     dependencies:
     - condition: mariadb.enabled
