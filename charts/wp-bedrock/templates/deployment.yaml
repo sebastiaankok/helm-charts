@@ -206,6 +206,9 @@ spec:
           - mountPath: /opt/bitnami/php/tmp/
             name: php-pid
             readOnly: false
+          - mountPath: /tmp
+            name: tmp
+            readOnly: false
       volumes:
       - emptyDir: {}
         name: tmp
